@@ -105,8 +105,11 @@ void updateSensors() {
   } else {
     Serial.println("Action: Move forward");
   }
-
 }
+
+//int IR_Detection() {
+//  int ir_status = digitalRead(IR_SENSOR_PIN);
+//}
 
 
 ////////////////////////////////////////////////////
@@ -155,7 +158,7 @@ void moveBackward(){
   digitalWrite(in4, LOW);    
 }
 
-void turnRight(){
+void turnLeft(){
   // Set motor speed
   analogWrite(enA, 255); // Full speed for right motor
   analogWrite(enB, 255); // Full speed for left motor
@@ -167,7 +170,7 @@ void turnRight(){
   digitalWrite(in4, HIGH);     
 }
 
-void turnLeft(){
+void turnRight(){
   // Set motor speed
   analogWrite(enA, 255); // Full speed for right motor
   analogWrite(enB, 255); // Full speed for left motor
@@ -180,12 +183,24 @@ void turnLeft(){
 }
 
 void controlMotors() {
-  // Check IR sensor and left ultrasonic conditions
-  if (digitalRead(IR_SENSOR_PIN) == LOW && cm_left > 15) {
-    Serial.println("Action: Turn left");
+  const int boundaryDistance = 10; // Minimum distance to a boundary in cm
+  bool irDetected = digitalRead(IR_SENSOR_PIN) == LOW;
+
+  if (irDetected) {
+    // Obstacle directly in front
+    Serial.println("IR Detected: Turning left");
+    turnLeft();
+  } else if (cm_left < boundaryDistance) {
+    // Too close to the left boundary
+    Serial.println("Too close to left boundary: Turning right");
+    turnRight();
+  } else if (cm_right < boundaryDistance) {
+    // Too close to the right boundary
+    Serial.println("Too close to right boundary: Turning left");
     turnLeft();
   } else {
-    Serial.println("Action: Move forward");
+    // Path is clear
+    Serial.println("Path clear: Moving forward");
     moveForward();
   }
 }
